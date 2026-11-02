@@ -1,5 +1,5 @@
 /**
- * CyberSafe Campus · Lógica y contenido de la aplicación
+ * CYBERSAFE CAMPUS · Lógica y contenido de la aplicación
  * ------------------------------------------------------------------
  * ÍNDICE
  *   1. Estado global y utilidades
@@ -17,7 +17,8 @@
 // ==================================================================
 // 1. ESTADO GLOBAL Y UTILIDADES
 // ==================================================================
-let lang = 'es', cur = 0;   // idioma activo ('es' | 'en') y pantalla actual (índice en S)
+let lang = 'es', cur = 0;
+try { lang = localStorage.getItem('lang') || 'es'; } catch (e) {}   // recuerda el idioma elegido (si el navegador lo permite)   // idioma activo ('es' | 'en') y pantalla actual (índice en S)
 // T(): devuelve el texto en el idioma activo si recibe un par [ES, EN]
 const T = o => Array.isArray(o) ? o[lang === 'es' ? 0 : 1] : o;
 // $(): atajo de document.querySelector
@@ -35,6 +36,28 @@ const UI = {
   ok: ['✅ ¡Correcto! ', '✅ Correct! '], no: ['❌ Casi. ', '❌ Not quite. '], reset: ['Reiniciar', 'Restart'],
   rep: ['Simular reporte de incidente', 'Simulate incident report'], done: ['completado', 'done'], cred: ['Créditos', 'Credits']
 };
+
+// Lema bajo el logo
+UI.tag = ['Protege tu vida digital', 'Protect your digital life'];
+
+// Instrucción breve que se muestra sobre cada actividad (según el tipo ui.k).
+// Una actividad puede traer su propia instrucción en ui.h (ver 3.1 y 5.2).
+const HINT = {
+  quiz:   ['Elige una respuesta en cada pregunta: verás al instante si es correcta y por qué.', 'Pick an answer for each question: you will instantly see if it is correct and why.'],
+  flip:   ['Toca o haz clic en cada tarjeta para voltearla y ver el impacto real.', 'Tap or click each card to flip it and see the real impact.'],
+  gen:    ['Pulsa el botón para generar una frase de paso. Luego escribe una contraseña de prueba (no la real) para ver qué tan fuerte es.', 'Press the button to generate a passphrase. Then type a test password (not your real one) to see how strong it is.'],
+  tabs:   ['Selecciona cada método para comparar sus ventajas y sus límites.', 'Select each method to compare its advantages and limits.'],
+  tree:   ['Responde según tu situación y sigue el camino hasta ver qué hacer. Puedes reiniciar cuando quieras.', 'Answer based on your situation and follow the path to see what to do. You can restart at any time.'],
+  check:  ['Marca cada punto que ya cumples; la barra muestra tu avance.', 'Check each item you already do; the bar shows your progress.'],
+  slider: ['Mueve el control deslizante y lee la retroalimentación según tu respuesta.', 'Move the slider and read the feedback for your answer.']
+};
+
+// Sección "Acerca de este recurso" (pantalla de inicio): [título, texto]
+const ABOUT = [
+  [['🎯 Propósito', '🎯 Purpose'], ['Ayudar a estudiantes universitarios a proteger su vida digital con información clara y actividades prácticas, para que aprendan haciendo y no solo leyendo.', 'Help university students protect their digital life with clear information and hands-on activities, so they learn by doing, not just reading.']],
+  [['🧭 Cómo usarlo', '🧭 How to use it'], ['Recorre los 5 módulos en orden o salta al que más te interese desde el menú. Cada pantalla trae una actividad con instrucciones y retroalimentación inmediata. Puedes cambiar de idioma en cualquier momento.', 'Go through the 5 modules in order or jump to the one you prefer from the menu. Each screen has an activity with instructions and instant feedback. You can switch language at any time.']],
+  [['📚 Sobre la información', '📚 About the information'], ['Los contenidos se basan en fuentes institucionales como CISA, NIST y la National Cybersecurity Alliance. Parte de los textos y las imágenes se hicieron con apoyo de IA y se declaran en la sección de Créditos.', 'The content is based on institutional sources such as CISA, NIST and the National Cybersecurity Alliance. Part of the texts and images were made with AI support and are declared in the Credits section.']]
+];
 
 // Banco de palabras [español, inglés] usado por el generador de passphrase
 const W = [['sol', 'río', 'luna', 'cafe', 'monte', 'nube', 'tigre', 'pino', 'cielo', 'ancla'], ['sun', 'river', 'moon', 'coffee', 'mountain', 'cloud', 'tiger', 'pine', 'sky', 'anchor']];
@@ -92,7 +115,7 @@ const M = [
       p: ['Señales: urgencia artificial, errores de redacción, remitentes sospechosos, enlaces acortados y solicitudes de datos o pagos. Los atacantes ya usan IA para crear mensajes más creíbles.',
           'Signs: artificial urgency, writing errors, suspicious senders, shortened links and requests for data or payments. Attackers now use AI to craft more convincing messages.'],
       src: ['CISA – Recognize and Report Phishing', 'https://www.cisa.gov/secure-our-world/recognize-and-report-phishing'],
-      ui: { k: 'quiz', q: [
+      ui: { k: 'quiz', h: ['Lee cada mensaje y decide si es phishing o legítimo. Después verás la explicación de por qué.', 'Read each message and decide whether it is phishing or legitimate. You will then see why.'], q: [
         { q: ['"soporte@unad-segura.xyz: Tu cuenta se cierra en 1 hora, ingresa aquí."', '"support@unad-secure.xyz: Your account closes in 1 hour, log in here."'], o: [['Phishing', 'Phishing'], ['Legítimo', 'Legitimate']], a: 0, e: ['Dominio extraño y urgencia artificial.', 'Odd domain and artificial urgency.'] },
         { q: ['Tu docente publica la guía de la semana en el aula virtual oficial y te llega la notificación habitual.', 'Your teacher posts this week\'s guide on the official virtual classroom and you get the usual notification.'], o: [['Phishing', 'Phishing'], ['Legítimo', 'Legitimate']], a: 1, e: ['Canal oficial, sin presión ni pedido de datos.', 'Official channel, no pressure or data request.'] },
         { q: ['"Ganaste una beca. Paga $50.000 para reclamarla: bit.ly/xx"', '"You won a scholarship. Pay $50 to claim it: bit.ly/xx"'], o: [['Phishing', 'Phishing'], ['Legítimo', 'Legitimate']], a: 0, e: ['Enlace acortado y petición de pago.', 'Shortened link and payment request.'] }] } },
@@ -137,7 +160,7 @@ const M = [
           'Report immediately to IT, change your passwords, disconnect affected devices if needed and document what happened.'],
       src: ['NIST – Cybersecurity Framework 2.0', 'https://doi.org/10.6028/NIST.CSWP.29'],
       rep: ['REPORTE DE INCIDENTE\nFecha/hora: ____\nQué ocurrió: ____\nCuentas/dispositivos afectados: ____\nAcciones tomadas: contraseñas cambiadas, MFA activada, dispositivo desconectado\nContacto: soporte TI de la universidad', 'INCIDENT REPORT\nDate/time: ____\nWhat happened: ____\nAffected accounts/devices: ____\nActions taken: passwords changed, MFA enabled, device disconnected\nContact: university IT support'],
-      ui: { k: 'quiz', rep: 1, q: [
+      ui: { k: 'quiz', rep: 1, h: ['Responde las preguntas y, al final, pulsa "Simular reporte de incidente" para ver qué datos conviene incluir.', 'Answer the questions and then press "Simulate incident report" to see what details are worth including.'], q: [
         { q: ['¿Qué haces primero tras sospechar un incidente?', 'What do you do first after suspecting an incident?'], o: [['Lo ignoro', 'Ignore it'], ['Reporto a TI y cambio contraseñas', 'Report to IT and change passwords']], a: 1, e: ['Actuar rápido limita el daño.', 'Acting fast limits damage.'] },
         { q: ['¿Por qué documentar lo ocurrido?', 'Why document what happened?'], o: [['Ayuda a investigar y recuperarse', 'It helps investigation and recovery'], ['No sirve de nada', 'It is useless']], a: 0, e: ['Los registros facilitan la respuesta.', 'Records make response easier.'] }] } }] }
 ];
@@ -148,19 +171,22 @@ const M = [
 // ==================================================================
 // Referencias en formato APA 7 mostradas en la pantalla de Créditos
 const REFS = [
-  'Cybersecurity and Infrastructure Security Agency. (n.d.). Recognize and report phishing. https://www.cisa.gov/secure-our-world/recognize-and-report-phishing',
-  'Cybersecurity and Infrastructure Security Agency. (n.d.). Stop ransomware. https://www.cisa.gov/stopransomware',
-  'National Institute of Standards and Technology. (2024). The NIST Cybersecurity Framework (CSF) 2.0. https://doi.org/10.6028/NIST.CSWP.29',
-  'National Institute of Standards and Technology. (n.d.). How do I create a good password? https://www.nist.gov/cybersecurity/how-do-i-create-good-password',
-  'National Cybersecurity Alliance. (n.d.). Cybersecurity tips for college students. https://www.staysafeonline.org/articles/cybersecurity-tips-for-college-students',
-  'University of California, Berkeley, Information Security Office. (2026). Cybersecurity handbook for students.'
+  'Anthropic. (2026). Claude (Sonnet 5.5) [Modelo de lenguaje de gran tamaño]. https://claude.ai',
+  'Cybersecurity and Infrastructure Security Agency. (s. f.). Recognize and report phishing. https://www.cisa.gov/secure-our-world/recognize-and-report-phishing',
+  'Cybersecurity and Infrastructure Security Agency. (s. f.). Stop ransomware. https://www.cisa.gov/stopransomware',
+  'Cybersecurity and Infrastructure Security Agency. (s. f.). Turn on MFA. https://www.cisa.gov/secure-our-world/turn-mfa',
+  'Cybersecurity and Infrastructure Security Agency. (s. f.). Update software. https://www.cisa.gov/secure-our-world/update-software',
+  'National Cybersecurity Alliance. (s. f.). Cybersecurity tips for college students. https://www.staysafeonline.org/articles/cybersecurity-tips-for-college-students',
+  'National Institute of Standards and Technology. (2024). The NIST cybersecurity framework (CSF) 2.0 (NIST CSWP 29). https://doi.org/10.6028/NIST.CSWP.29',
+  'National Institute of Standards and Technology. (s. f.). How do I create a good password? https://www.nist.gov/cybersecurity/how-do-i-create-good-password',
+  'Temoshok, D., Richer, J. P., Choong, Y.-Y., Fenton, J. L., Regenscheid, A., Galluzzo, R., Lefkovitz, N., Gupta, S., Keller, J. y Sibert, K. (2025). Digital identity guidelines: Authentication and authenticator management (NIST SP 800-63B-4). National Institute of Standards and Technology. https://doi.org/10.6028/NIST.SP.800-63B-4'
 ];
 
 // Créditos de imágenes (completar autor/herramienta antes de entregar)
 const IMGS = [
-  '(2026). Escudo de ciberseguridad con iconos de protección [Imagen generada con IA].',
-  '(2026). Escudo digital bloqueando amenazas [Imagen generada con IA].',
-  '[magnific.com]. Equipo de hackers frente a monitores [Fotografía]. [https://www.magnific.com/es/foto-gratis/hacker-femenina-su-equipo-ciber-terroristas-creando-virus-peligroso-atacar-al-gobierno_19651636.htm#fromView=keyword&page=1&position=4&uuid=7520f2b1-f72b-444a-a516-dc76707f986a&track=ais_hybrid&query=Ciberseguridad].',
+  '[Autor/Herramienta IA]. (2026). Escudo de ciberseguridad con iconos de protección [Imagen generada con IA]. [Completar herramienta y fecha].',
+  '[Autor/Herramienta IA]. (2026). Escudo digital bloqueando amenazas [Imagen generada con IA]. [Completar herramienta y fecha].',
+  '[Autor/Banco de imágenes]. (n.d.). Equipo de hackers frente a monitores [Fotografía]. [Completar autor y URL de la fuente].'
 ];
 
 
@@ -181,14 +207,17 @@ const nav = () => `<div class="nav"><button class="btn ghost" ${cur ? '' : 'disa
 
 // Pantalla 1: bienvenida, objetivos y tarjetas clicables de los 5 módulos
 function home() {
-  return `<section class="card hero"><div><h1>${lang === 'es' ? 'Ciberseguridad Unadista: Protege tu vida digital' : 'Unadista Cybersecurity: Protect your digital life'}</h1>
+  return `<section class="card hero"><div><h1>${lang === 'es' ? 'CyberSafe Campus: Protege tu vida digital' : 'CyberSafe Campus: Protect your digital life'}</h1>
 <p>${lang === 'es' ? 'Bienvenido/a. Aprenderás a:' : 'Welcome. You will learn to:'}</p><ul>
 <li>${lang === 'es' ? 'Entender las amenazas que enfrentas como estudiante' : 'Understand the threats you face as a student'}</li>
 <li>${lang === 'es' ? 'Crear contraseñas y usar MFA correctamente' : 'Create passwords and use MFA correctly'}</li>
 <li>${lang === 'es' ? 'Reconocer phishing y responder a incidentes' : 'Recognize phishing and respond to incidents'}</li></ul>
 <button class="btn" data-go="1">${T(UI.start)}</button></div><img src="img/escudo.jpg" alt="Ciberseguridad"></section>
-<h2>${lang === 'es' ? 'Elige un módulo' : 'Choose a module'}</h2><div class="grid">${M.map((m, i) => `<button class="mod" data-mod="${i}"><span>${m.i}</span><b>${T(UI.mod)} ${i + 1}</b>${T(m.t)}</button>`).join('')}</div>`;
+<h2>${lang === 'es' ? 'Elige un módulo' : 'Choose a module'}</h2><div class="grid">${M.map((m, i) => `<button class="mod" data-mod="${i}"><span>${m.i}</span><b>${T(UI.mod)} ${i + 1}</b>${T(m.t)}</button>`).join('')}</div>${about()}`;
 }
+
+// Sección 'Acerca de este recurso' (propósito, uso y fuentes)
+const about = () => `<section class="card"><h2>${T(['Acerca de este recurso', 'About this resource'])}</h2><div class="about">${ABOUT.map(([t, p]) => `<div><h3>${T(t)}</h3><p>${T(p)}</p></div>`).join('')}</div></section>`;
 
 
 // Última pantalla: referencias APA y créditos de imágenes
@@ -204,7 +233,7 @@ function sub(s) {
   const n = M[s.mi].s.length;
   return `<section class="card"><p class="crumb">${T(UI.mod)} ${s.mi + 1} · ${s.mi + 1}.${s.si + 1} — ${T(M[s.mi].t)}</p><h2>${T(s.t)}</h2>
 <div class="row"><p>${T(s.p)}</p><img src="img/${s.img}.jpg" alt=""></div><p class="src">📚 ${T(UI.src)}: <a href="${s.src[1]}" target="_blank" rel="noopener">${s.src[0]}</a></p></section>
-<section class="card" id="ui"><h3>${T(UI.inter)}</h3>${R[s.ui.k](s.ui)}</section>${nav()}`;
+<section class="card" id="ui"><h3>${T(UI.inter)}</h3><p class="hint">💡 ${T(s.ui.h || HINT[s.ui.k])}</p>${R[s.ui.k](s.ui)}</section>${nav()}`;
 }
 
 
@@ -295,26 +324,49 @@ const A = {
 // ==================================================================
 /* Render general y eventos */
 
-// Dibuja la pantalla actual, activa su actividad y actualiza barra de progreso, idioma y botones
+// Menú de navegación: Inicio, Módulos 1-5 y Créditos (resalta la sección actual)
+function menu() {
+  const s = S[cur];
+  const chip = (i, label, title, on) => `<button class="chip${on ? ' on' : ''}" data-go="${i}" title="${title}"${on ? ' aria-current="page"' : ''}>${label}</button>`;
+  return chip(0, '🏠 ' + T(UI.home), T(UI.home), cur === 0)
+    + M.map((m, n) => chip(S.findIndex(x => x.mi === n), `${m.i} ${T(UI.mod)} ${n + 1}`, T(m.t), s.mi === n)).join('')
+    + chip(S.length - 1, '📚 ' + T(UI.cred), T(UI.cred), s.k === 'cred');
+}
+
+// Dirección de cada pantalla (#inicio, #m1-1 ... #m5-2, #creditos) para poder compartir enlaces y usar el botón "atrás"
+const slug = i => { const s = S[i]; return s.k === 'home' ? 'inicio' : s.k === 'cred' ? 'creditos' : `m${s.mi + 1}-${s.si + 1}`; };
+const idx = h => Math.max(0, S.findIndex((_, k) => slug(k) === h));
+
+// Dibuja la pantalla actual, activa su actividad y actualiza menú, pie, barra de progreso, idioma y botones
 function render() {
   const s = S[cur];
   $('#app').innerHTML = s.k === 'home' ? home() : s.k === 'cred' ? cred() + nav() : sub(s);
   if (s.k === 'sub') A[s.ui.k](s.ui);
+  $('#menu').innerHTML = menu();
+  $('#foot').innerHTML = `<b>CyberSafe Campus</b> · ${lang === 'es' ? 'Recurso educativo multimedia' : 'Multimedia educational resource'} · UNAD<br><button class="flink" data-go="${S.length - 1}">${T(UI.cred)}</button>`;
   $('#bar').style.width = cur / (S.length - 1) * 100 + '%';
   $('#langBtn').textContent = lang === 'es' ? 'EN' : 'ES';
+  $('#tag').textContent = T(UI.tag);
   document.documentElement.lang = lang;
-  document.title = lang === 'es' ? 'Ciberseguridad Unadista' : 'Unadista Cybersecurity';
+  document.title = (s.k === 'sub' ? T(s.t) + ' · ' : '') + 'CyberSafe Campus';
   document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => go(+b.dataset.go));
   document.querySelectorAll('[data-mod]').forEach(b => b.onclick = () => go(S.findIndex(x => x.mi === +b.dataset.mod)));
-  $('#foot').textContent = lang === 'es' ? 'Recurso educativo multimedia · UNAD' : 'Multimedia educational resource · UNAD';
+  const on = $('#menu .on'); if (on) $('#menu').scrollLeft = on.offsetLeft - 16;   // en celular, deja visible la sección activa en el menú
 }
 
-// Cambia de pantalla (limita el índice al rango válido) y sube al inicio de la página
-function go(i) { cur = Math.max(0, Math.min(S.length - 1, i)); render(); window.scrollTo(0, 0); }
+// Ir a una pantalla: cambia la dirección (#...) y 'show' se encarga de dibujarla
+function go(i) {
+  i = Math.max(0, Math.min(S.length - 1, i));
+  if (location.hash === '#' + slug(i)) { render(); window.scrollTo(0, 0); } else location.hash = slug(i);
+}
 
-// Eventos del encabezado: botón Inicio y cambio de idioma ES/EN
+// Lee la dirección actual, dibuja esa pantalla y sube al inicio (también se ejecuta con "atrás"/"adelante")
+function show() { cur = idx(location.hash.slice(1)); render(); window.scrollTo(0, 0); }
+window.addEventListener('hashchange', show);
+
+// Eventos del encabezado: botón Inicio y cambio de idioma ES/EN (se recuerda la preferencia)
 $('#homeBtn').onclick = () => go(0);
-$('#langBtn').onclick = () => { lang = lang === 'es' ? 'en' : 'es'; render(); };
+$('#langBtn').onclick = () => { lang = lang === 'es' ? 'en' : 'es'; try { localStorage.setItem('lang', lang); } catch (e) {} render(); };
 
-// Arranque: dibuja la primera pantalla
-render();
+// Arranque: dibuja la pantalla indicada en la dirección (o el inicio)
+show();
