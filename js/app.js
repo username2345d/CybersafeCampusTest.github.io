@@ -184,9 +184,9 @@ const REFS = [
 
 // Créditos de imágenes (completar autor/herramienta antes de entregar)
 const IMGS = [
-  '[Autor/Herramienta IA]. (2026). Escudo de ciberseguridad con iconos de protección [Imagen generada con IA]. [Completar herramienta y fecha].',
-  '[Autor/Herramienta IA]. (2026). Escudo digital bloqueando amenazas [Imagen generada con IA]. [Completar herramienta y fecha].',
-  '[Autor/Banco de imágenes]. (n.d.). Equipo de hackers frente a monitores [Fotografía]. [Completar autor y URL de la fuente].'
+  '(2026). Escudo de ciberseguridad con iconos de protección [Imagen generada con IA].',
+  '(2026). Escudo digital bloqueando amenazas [Imagen generada con IA].',
+  '[magnific.com]. Equipo de hackers frente a monitores [Fotografía]. [https://www.magnific.com/es/foto-gratis/hacker-femenina-su-equipo-ciber-terroristas-creando-virus-peligroso-atacar-al-gobierno_19651636.htm#fromView=keyword&page=1&position=4&uuid=7520f2b1-f72b-444a-a516-dc76707f986a&track=ais_hybrid&query=Ciberseguridad].',
 ];
 
 
